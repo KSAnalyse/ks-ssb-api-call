@@ -1,18 +1,24 @@
 package no.ks.fiks.ssbAPI.metadataApi;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class SsbMetadataVariables {
-    private String code;
-    private String text;
-    private List<String> values;
-    private List<String> valueTexts;
+    private final String code;
+    private final String text;
+    private final List<String> values;
+    private final List<String> valueTexts;
+    private final int largestValue;
+    private final int largestValueText;
 
     public SsbMetadataVariables(String code, String text, List<String> values, List<String> valueTexts) {
         this.code = code;
         this.text = text;
         this.values = values;
         this.valueTexts = valueTexts;
+        this.largestValue = findLargestValueString(values);
+        this.largestValueText = findLargestValueString(valueTexts);
     }
 
     public String getCode() {
@@ -29,5 +35,17 @@ public class SsbMetadataVariables {
 
     public List<String> getValueTexts() {
         return valueTexts;
+    }
+
+    public int getLargestValue() {
+        return largestValue;
+    }
+
+    public int getLargestValueText() {
+        return largestValueText;
+    }
+
+    private int findLargestValueString(List<String> stringList) {
+        return Objects.requireNonNull(stringList.stream().max(Comparator.comparing(String::length)).orElse(null)).length();
     }
 }
