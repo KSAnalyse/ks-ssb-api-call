@@ -5,33 +5,33 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SsbKlass {
-    private final List<String> klassCodes;
-    private final List<SsbKlassCodes> klassCodesResultJson;
+    private final Map<String, SsbKlassCodes> klassCodesResultJson;
 
-    public SsbKlass(List<String> klassCodes) throws JsonProcessingException {
-        this.klassCodes = klassCodes;
-        this.klassCodesResultJson = new ArrayList<>();
-        convertStringToJson();
+    public SsbKlass() {
+        this.klassCodesResultJson = new LinkedHashMap<>();
     }
 
-    private void convertStringToJson() throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode actualObj = mapper.readTree(klassCodes.get(0));
-        for (JsonNode klassCode : actualObj.get("codes")) {
-            String regionKode = klassCode.get("code").asText();
-            String regionNavn = klassCode.get("name").asText();
-            LocalDate validFromInRequestedRange = LocalDate.parse(klassCode.get("validFromInRequestedRange").asText());
-            LocalDate validToInRequestedRange = LocalDate.parse(klassCode.get("validToInRequestedRange").asText());
+    public void convertStringToJson(List<String> klassCodes) throws JsonProcessingException {
+        for (String codes : klassCodes) {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode actualObj = mapper.readTree(codes);
+            for (JsonNode klassCode : actualObj.get("codes")) {
+                String regionKode = klassCode.get("code").asText();
+                String regionNavn = klassCode.get("name").asText();
+                LocalDate validFromInRequestedRange = LocalDate.parse(klassCode.get("validFromInRequestedRange").asText());
+                LocalDate validToInRequestedRange = LocalDate.parse(klassCode.get("validToInRequestedRange").asText());
 
-            klassCodesResultJson.add(new SsbKlassCodes(regionKode, regionNavn, validFromInRequestedRange, validToInRequestedRange));
+                klassCodesResultJson.put(regionKode, new SsbKlassCodes(regionKode, regionNavn, validFromInRequestedRange, validToInRequestedRange));
+            }
         }
     }
 
-    public List<SsbKlassCodes> getKlassCodesResultJson() {
+    public Map<String, SsbKlassCodes> getKlassCodesResultJson() {
         return klassCodesResultJson;
     }
 }

@@ -1,13 +1,19 @@
 package no.ks.fiks.ssbAPI.APIService;
 
+import no.ks.fiks.ssbAPI.builder.MetadataBuilder;
 import no.ks.fiks.ssbAPI.klassApi.SsbKlass;
 import no.ks.fiks.ssbAPI.metadataApi.SsbMetadata;
+import no.ks.fiks.ssbAPI.metadataApi.SsbMetadataVariables;
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -44,32 +50,81 @@ public class SsbApiCall {
     }
 
     public void metadataApiCall() throws IOException {
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl));
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
+    }
+
+    public void metadataApiCall(String tableNumber) throws IOException {
+        metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
     }
 
     public void klassApiCall() throws IOException {
         List<String> klassResult = new ArrayList<>();
         for (URL url : klassListUrl) {
-            klassResult.add(apiCall("klass", url));
+            klassResult.add(apiCall("klass", url, ""));
         }
-        klass = new SsbKlass(klassResult);
+        klass = new SsbKlass();
+        klass.convertStringToJson(klassResult);
     }
 
-    public void ssbApiCall() throws IOException {
+    private String buildString(SsbMetadataVariables test) {
+        StringBuilder values = new StringBuilder();
+        int count = 0;
+        for (String s : test.getValues()) {
+            values.append("\"").append(s).append("\", ");
+            count++;
+        }
+        values = new StringBuilder(values.substring(0, values.length() - 2));
+        return "{ \"code\": \"" + test.getCode() + "\", \"selection\": { \"filter\": \"item\", \"values\": [" + values + "]}},";
+    }
+
+    public void tableApiCall() throws IOException {
+        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
+        List<SsbMetadataVariables> filteredMetadata = metadataBuilder.filterMetadata();
+        System.out.println(filteredMetadata.size());
+
+        /*StringBuilder queryTwo = new StringBuilder();
+        for (SsbMetadataVariables test : filteredMetadata)
+            queryTwo.append(buildString(test));
+        queryTwo = new StringBuilder(queryTwo.substring(0, queryTwo.length() - 1));
+        String queryOne = "{\"query\": [";
+        String queryThree = "],\"response\": {\"format\": \"json-stat2\"}}";
+        String query = queryOne + queryTwo + queryThree;
+        System.out.println(query);
+        //System.out.println(apiCall("table", metadataUrl, query));
+
+         */
+
 
     }
 
-    private String apiCall(String methodCall, URL url) throws IOException {
+    private String apiCall(String methodCall, URL url, String query) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestProperty("User-Agent",
                 "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
-        if (methodCall.equals("klass")) {
-            connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Content-Type", "application/json; utf-8");
+        connection.setRequestProperty("Accept", "application/json");
+        if (methodCall.equals("klass") || methodCall.equals("metadata")) {
             connection.setRequestMethod("GET");
-        } else if (methodCall.equals("metadata")) {
-            connection.setRequestMethod("GET");
+        } else if (methodCall.equals("table")) {
+            System.out.println("yes");
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = query.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine = null;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                return response.toString();
+            }
         }
-        connection.connect();
+        //connection.connect();
         if (!responseCode(connection.getResponseCode())) {
             return "Response code: " + connection.getResponseCode();
         }

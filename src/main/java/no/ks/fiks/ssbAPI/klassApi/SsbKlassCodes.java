@@ -4,16 +4,20 @@ import java.time.LocalDate;
 
 public class SsbKlassCodes {
 
-    private String regionCode;
-    private String regionName;
-    private LocalDate validFromInRequestedRange;
-    private LocalDate validToInRequestedRange;
+    private final String regionCode;
+    private final String regionName;
+    private final LocalDate validFromInRequestedRange;
+    private final LocalDate validToInRequestedRange;
+    private final int fromYear;
+    private final int toYear;
 
     public SsbKlassCodes(String regionCode, String regionName, LocalDate validFromInRequestedRange, LocalDate validToInRequestedRange) {
         this.regionCode = regionCode;
         this.regionName = regionName;
         this.validFromInRequestedRange = validFromInRequestedRange;
         this.validToInRequestedRange = validToInRequestedRange;
+        this.fromYear = validFromInRequestedRange.getYear();
+        this.toYear = validToInRequestedRange.getYear();
     }
 
     public String getRegionCode() {
@@ -30,5 +34,13 @@ public class SsbKlassCodes {
 
     public LocalDate getValidToInRequestedRange() {
         return validToInRequestedRange;
+    }
+
+    public int getFromYear() {
+        return fromYear;
+    }
+
+    public int getToYear() {
+        return toYear;
     }
 }

@@ -3,17 +3,14 @@ package no.ks.fiks.ssbAPI.metadataApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.ks.fiks.ssbAPI.klassApi.SsbKlassCodes;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SsbMetadata {
     private final String metadataResult;
-    private String title;
     private final List<SsbMetadataVariables> variables;
+    private String title;
 
     public SsbMetadata(String metadataResult) throws JsonProcessingException {
         this.metadataResult = metadataResult;
@@ -36,7 +33,6 @@ public class SsbMetadata {
             }
             variables.add(new SsbMetadataVariables(code, text, values, valueTexts));
         }
-        System.out.println(variables.get(0).getValues());
     }
 
     public String getTitle() {

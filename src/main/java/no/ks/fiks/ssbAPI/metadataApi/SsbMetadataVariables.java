@@ -46,6 +46,6 @@ public class SsbMetadataVariables {
     }
 
     private int findLargestValueString(List<String> stringList) {
-        return Objects.requireNonNull(stringList.stream().max(Comparator.comparing(String::length)).orElse(null)).length();
+        return stringList.stream().mapToInt(String::length).max().orElse(-1);
     }
 }
