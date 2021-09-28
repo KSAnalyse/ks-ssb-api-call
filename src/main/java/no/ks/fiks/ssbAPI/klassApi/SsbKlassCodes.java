@@ -6,8 +6,8 @@ public class SsbKlassCodes {
 
     private final String regionCode;
     private final String regionName;
-    private final LocalDate validFromInRequestedRange;
-    private final LocalDate validToInRequestedRange;
+    private LocalDate validFromInRequestedRange;
+    private LocalDate validToInRequestedRange;
     private final int fromYear;
     private final int toYear;
 
@@ -32,8 +32,16 @@ public class SsbKlassCodes {
         return validFromInRequestedRange;
     }
 
+    public void setValidFromInRequestedRange(LocalDate validFromInRequestedRange) {
+        this.validFromInRequestedRange = validFromInRequestedRange;
+    }
+
     public LocalDate getValidToInRequestedRange() {
         return validToInRequestedRange;
+    }
+
+    public void setValidToInRequestedRange(LocalDate validToInRequestedRange) {
+        this.validToInRequestedRange = validToInRequestedRange;
     }
 
     public int getFromYear() {
