@@ -14,10 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class SsbApiCall {
     private URL metadataUrl;
@@ -67,35 +64,22 @@ public class SsbApiCall {
         klass.convertStringToJson(klassResult);
     }
 
-    private String buildString(SsbMetadataVariables test) {
-        StringBuilder values = new StringBuilder();
-        int count = 0;
-        for (String s : test.getValues()) {
-            values.append("\"").append(s).append("\", ");
-            count++;
-        }
-        values = new StringBuilder(values.substring(0, values.length() - 2));
-        return "{ \"code\": \"" + test.getCode() + "\", \"selection\": { \"filter\": \"item\", \"values\": [" + values + "]}},";
-    }
-
-    public void tableApiCall() throws IOException {
+    public List<String> tableApiCall() throws IOException {
         MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
-        List<SsbMetadataVariables> filteredMetadata = metadataBuilder.filterMetadata();
-        System.out.println(filteredMetadata.size());
+        Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.filterMetadata();
+        List<String> queryList = new ArrayList<>();
 
-        /*StringBuilder queryTwo = new StringBuilder();
-        for (SsbMetadataVariables test : filteredMetadata)
-            queryTwo.append(buildString(test));
-        queryTwo = new StringBuilder(queryTwo.substring(0, queryTwo.length() - 1));
-        String queryOne = "{\"query\": [";
-        String queryThree = "],\"response\": {\"format\": \"json-stat2\"}}";
-        String query = queryOne + queryTwo + queryThree;
-        System.out.println(query);
-        //System.out.println(apiCall("table", metadataUrl, query));
-
-         */
-
-
+        for (int key : filteredMetadata.keySet()) {
+            StringBuilder queryTwo = new StringBuilder();
+            for (SsbMetadataVariables metadataVariables : filteredMetadata.get(key))
+                queryTwo.append(buildString(metadataVariables));
+            queryTwo = new StringBuilder(queryTwo.substring(0, queryTwo.length() - 1));
+            String queryOne = "{\"query\": [";
+            String queryThree = "],\"response\": {\"format\": \"json-stat2\"}}";
+            String query = queryOne + queryTwo + queryThree;
+            queryList.add(apiCall("table", metadataUrl, query));
+        }
+        return queryList;
     }
 
     private String apiCall(String methodCall, URL url, String query) throws IOException {
@@ -129,6 +113,15 @@ public class SsbApiCall {
             return "Response code: " + connection.getResponseCode();
         }
         return IOUtils.toString(url.openStream());
+    }
+
+    private String buildString(SsbMetadataVariables test) {
+        StringBuilder values = new StringBuilder();
+        for (String s : test.getValues()) {
+            values.append("\"").append(s).append("\", ");
+        }
+        values = new StringBuilder(values.substring(0, values.length() - 2));
+        return "{ \"code\": \"" + test.getCode() + "\", \"selection\": { \"filter\": \"item\", \"values\": [" + values + "]}},";
     }
 
     private boolean responseCode(int code) {
