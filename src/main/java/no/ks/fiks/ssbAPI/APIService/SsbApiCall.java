@@ -91,7 +91,6 @@ public class SsbApiCall {
         if (methodCall.equals("klass") || methodCall.equals("metadata")) {
             connection.setRequestMethod("GET");
         } else if (methodCall.equals("table")) {
-            System.out.println("yes");
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             try (OutputStream os = connection.getOutputStream()) {
@@ -108,7 +107,6 @@ public class SsbApiCall {
                 return response.toString();
             }
         }
-        //connection.connect();
         if (!responseCode(connection.getResponseCode())) {
             return "Response code: " + connection.getResponseCode();
         }
