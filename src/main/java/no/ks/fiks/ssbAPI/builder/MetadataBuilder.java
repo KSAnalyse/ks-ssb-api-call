@@ -26,6 +26,7 @@ public class MetadataBuilder {
     public Map<Integer, List<SsbMetadataVariables>> filterMetadata() {
         SsbMetadataVariables tidVar = metadata.getVariables().get(findTidInList());
         SsbMetadataVariables regionVar = metadata.getVariables().get(findRegionInList());
+        boolean added = false;
         for (String sTid : tidVar.getValues()) {
             List<String> regionValues = new ArrayList<>();
             List<String> regionValueTexts = new ArrayList<>();
@@ -37,18 +38,27 @@ public class MetadataBuilder {
                 if (tid >= klass.getKlassCodesResultJson().get(region).getFromYear() && tid < klass.getKlassCodesResultJson().get(region).getToYear()) {
                     if (checkSize(regionValues) >= 790000) {
                         addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
+                        added = true;
                         regionValues = new ArrayList<>();
                         regionValueTexts = new ArrayList<>();
+                        int i = regionVar.getValues().indexOf(region);
+                        regionValues.add(region);
+                        regionValueTexts.add(regionVar.getValues().get(i));
+                    } else {
+                        int i = regionVar.getValues().indexOf(region);
+                        regionValues.add(region);
+                        regionValueTexts.add(regionVar.getValues().get(i));
+                        added = false;
                     }
-                    int i = regionVar.getValues().indexOf(region);
-                    regionValues.add(region);
-                    regionValueTexts.add(regionVar.getValues().get(i));
                 }
             }
-            if (tidVar.getValues().get(tidVar.getValues().size() - 1).equals(sTid)) {
+            if (!added) {
                 addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
             }
         }
+        /*for (Integer key: filteredMetadata.keySet())
+            for (SsbMetadataVariables value : filteredMetadata.get(key))
+            System.out.println(value.getCode());*/
         return filteredMetadata;
     }
 
