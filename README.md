@@ -7,7 +7,7 @@ Solution to use the different SSB.no API's
 5. If you need to query several tables, run metadataApiCall with the table number, then tableApiCall again. You don't need supply classification codes more than once.
 
 The current solution needs classification numbers from ssb.no klass API. We have added this so we can filter out regionCodes that aren't valid in the years we are querying for.
-It also only queries the last FIVE years.
+It also only queries the last five years.
 
 Future plans include:
 1. Custom filters for the metadata
