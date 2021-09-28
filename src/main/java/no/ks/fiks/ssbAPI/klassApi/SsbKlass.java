@@ -25,8 +25,16 @@ public class SsbKlass {
                 String regionNavn = klassCode.get("name").asText();
                 LocalDate validFromInRequestedRange = LocalDate.parse(klassCode.get("validFromInRequestedRange").asText());
                 LocalDate validToInRequestedRange = LocalDate.parse(klassCode.get("validToInRequestedRange").asText());
-
-                klassCodesResultJson.put(regionKode, new SsbKlassCodes(regionKode, regionNavn, validFromInRequestedRange, validToInRequestedRange));
+                if (klassCodesResultJson.containsKey(regionKode)) {
+                    if (validFromInRequestedRange.isBefore(klassCodesResultJson.get(regionKode).getValidFromInRequestedRange())) {
+                        klassCodesResultJson.get(regionKode).setValidFromInRequestedRange(validFromInRequestedRange);
+                    }
+                    if (validToInRequestedRange.isAfter(klassCodesResultJson.get(regionKode).getValidToInRequestedRange())) {
+                        klassCodesResultJson.get(regionKode).setValidToInRequestedRange(validToInRequestedRange);
+                    }
+                } else {
+                    klassCodesResultJson.put(regionKode, new SsbKlassCodes(regionKode, regionNavn, validFromInRequestedRange, validToInRequestedRange));
+                }
             }
         }
     }
