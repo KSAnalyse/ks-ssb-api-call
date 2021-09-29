@@ -6,16 +6,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SsbMetadata {
     private final String metadataResult;
     private final List<SsbMetadataVariables> variables;
     private String title;
+    private Map<String, List<String>> metadataFilter;
+    private boolean removeAllBut;
 
     public SsbMetadata(String metadataResult) throws JsonProcessingException {
         this.metadataResult = metadataResult;
         variables = new ArrayList<>();
         convertStringToJson();
+    }
+
+    public SsbMetadata(String metadataResult, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws JsonProcessingException {
+        this.metadataResult = metadataResult;
+        this.metadataFilter = metadataFilter;
+        this.removeAllBut = removeAllBut;
+        variables = new ArrayList<>();
+        convertStringToJson();
+        filterMetadata();
     }
 
     private void convertStringToJson() throws JsonProcessingException {
@@ -41,5 +53,13 @@ public class SsbMetadata {
 
     public List<SsbMetadataVariables> getVariables() {
         return variables;
+    }
+
+    private void filterMetadata() {
+        for (SsbMetadataVariables metadataVariables : variables) {
+            if (metadataFilter.containsKey(metadataVariables.getCode())) {
+                metadataVariables.filterValuesAndValueTexts(metadataFilter.get(metadataVariables.getCode()), removeAllBut);
+            }
+        }
     }
 }
