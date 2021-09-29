@@ -15,9 +15,11 @@ public class MetadataBuilder {
     private final SsbMetadata metadata;
     private final SsbKlass klass;
     private final Map<Integer, List<SsbMetadataVariables>> filteredMetadata;
+    private final int numberOfYears;
     private int query = 0;
 
-    public MetadataBuilder(SsbMetadata metadata, SsbKlass klass) {
+    public MetadataBuilder(SsbMetadata metadata, SsbKlass klass, int numberOfYears) {
+        this.numberOfYears = numberOfYears;
         this.metadata = metadata;
         this.klass = klass;
         this.filteredMetadata = new LinkedHashMap<>();
@@ -32,10 +34,20 @@ public class MetadataBuilder {
             List<String> regionValueTexts = new ArrayList<>();
 
             int tid = Integer.parseInt(sTid);
-            if (tid < LocalDate.now().getYear() - 5)
+            int firstTid = Integer.parseInt(tidVar.getValues().get(0));
+
+            if (tid < LocalDate.now().getYear() - numberOfYears && (LocalDate.now().getYear() - numberOfYears) >= firstTid)
                 continue;
+
             for (String region : regionVar.getValues()) {
+                if (region.equals("0"))
+                    region = "EAK";
+                if (klass.getKlassCodesResultJson().get(region) == null)
+                    continue;
+                System.out.println(region);
                 if (tid >= klass.getKlassCodesResultJson().get(region).getFromYear() && tid < klass.getKlassCodesResultJson().get(region).getToYear()) {
+                    if (region.equals("EAK"))
+                        region = "0";
                     if (checkSize(regionValues) >= 790000) {
                         addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
                         added = true;
@@ -56,9 +68,41 @@ public class MetadataBuilder {
                 addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
             }
         }
-        /*for (Integer key: filteredMetadata.keySet())
-            for (SsbMetadataVariables value : filteredMetadata.get(key))
-            System.out.println(value.getCode());*/
+        return filteredMetadata;
+    }
+
+    public Map<Integer, List<SsbMetadataVariables>> buildMetadata() {
+        SsbMetadataVariables tidVar = metadata.getVariables().get(findTidInList());
+        SsbMetadataVariables regionVar = metadata.getVariables().get(findRegionInList());
+        boolean added = false;
+        for (String sTid : tidVar.getValues()) {
+            List<String> regionValues = new ArrayList<>();
+            List<String> regionValueTexts = new ArrayList<>();
+
+            int tid = Integer.parseInt(sTid);
+            if (tid < LocalDate.now().getYear() - numberOfYears)
+                continue;
+            for (String region : regionVar.getValues()) {
+                if (checkSize(regionValues) >= 790000) {
+                    addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
+                    added = true;
+                    regionValues = new ArrayList<>();
+                    regionValueTexts = new ArrayList<>();
+                    int i = regionVar.getValues().indexOf(region);
+                    regionValues.add(region);
+                    regionValueTexts.add(regionVar.getValues().get(i));
+                } else {
+                    int i = regionVar.getValues().indexOf(region);
+                    regionValues.add(region);
+                    regionValueTexts.add(regionVar.getValues().get(i));
+                    added = false;
+                }
+            }
+
+            if (!added) {
+                addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
+            }
+        }
         return filteredMetadata;
     }
 
