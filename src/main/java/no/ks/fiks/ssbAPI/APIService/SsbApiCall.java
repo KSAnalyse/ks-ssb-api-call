@@ -72,7 +72,7 @@ public class SsbApiCall {
         }
     }
 
-    public void metadataApiCall() throws IOException {
+    private void metadataApiCall() throws IOException {
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
     }
 
@@ -100,27 +100,11 @@ public class SsbApiCall {
     }
 
     public List<String> tableApiCall() throws IOException {
-        filterYears();
-        if (klass == null) {
-            return klassUnfilteredSsbCall();
-        } else {
-            return ssbApiCall();
+        if (numberOfYears > 0) {
+            filterYears();
         }
-    }
-
-    private List<String> klassUnfilteredSsbCall() throws IOException {
         MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
         Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.buildMetadata();
-        List<String> queryList = new ArrayList<>();
-        for (int key : filteredMetadata.keySet()) {
-            queryBuilder(filteredMetadata, queryList, key);
-        }
-        return queryList;
-    }
-
-    private List<String> ssbApiCall() throws IOException {
-        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
-        Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.filterMetadata();
         List<String> queryList = new ArrayList<>();
 
         for (int key : filteredMetadata.keySet()) {
@@ -200,7 +184,6 @@ public class SsbApiCall {
         String queryOne = "{\"query\": [";
         String queryThree = "],\"response\": {\"format\": \"json-stat2\"}}";
         String query = queryOne + queryTwo + queryThree;
-        System.out.println(query);
         queryList.add(apiCall("table", metadataUrl, query));
     }
 
@@ -218,12 +201,15 @@ public class SsbApiCall {
             if (metadataVariables.getCode().equals("Tid")) {
                 if (metadataVariables.getValues().size() < numberOfYears)
                     numberOfYears = metadataVariables.getValues().size();
-
                 if (numberOfYears == 0)
                     throw new IndexOutOfBoundsException("Number of years cannot be 0, either -1 or > 0");
+                if (metadataVariables.getValues().get(0).length() > 4)
+                    if (metadataVariables.getText().equalsIgnoreCase("kvartal"))
+                        numberOfYears = numberOfYears * 4;
+                    else if (metadataVariables.getText().equalsIgnoreCase("måned"))
+                        numberOfYears = numberOfYears * 12;
                 metadataVariables.getValues().subList(0, metadataVariables.getValues().size() - numberOfYears).clear();
             }
-
         }
     }
 
