@@ -4,7 +4,6 @@ import no.ks.fiks.ssbAPI.klassApi.SsbKlass;
 import no.ks.fiks.ssbAPI.metadataApi.SsbMetadata;
 import no.ks.fiks.ssbAPI.metadataApi.SsbMetadataVariables;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,11 +14,9 @@ public class MetadataBuilder {
     private final SsbMetadata metadata;
     private final SsbKlass klass;
     private final Map<Integer, List<SsbMetadataVariables>> filteredMetadata;
-    private final int numberOfYears;
     private int query = 0;
 
-    public MetadataBuilder(SsbMetadata metadata, SsbKlass klass, int numberOfYears) {
-        this.numberOfYears = numberOfYears;
+    public MetadataBuilder(SsbMetadata metadata, SsbKlass klass) {
         this.metadata = metadata;
         this.klass = klass;
         this.filteredMetadata = new LinkedHashMap<>();
@@ -34,21 +31,21 @@ public class MetadataBuilder {
             List<String> regionValueTexts = new ArrayList<>();
 
             int tid = Integer.parseInt(sTid);
-            int firstTid = Integer.parseInt(tidVar.getValues().get(0));
-
-            if (tid < LocalDate.now().getYear() - numberOfYears && (LocalDate.now().getYear() - numberOfYears) >= firstTid)
-                continue;
 
             for (String region : regionVar.getValues()) {
-                if (region.equals("0"))
+            boolean changedRegion = false;
+                if (region.equals("0")) {
+                    changedRegion = true;
                     region = "EAK";
-                if (klass.getKlassCodesResultJson().get(region) == null)
+                }
+                if (!klass.getKlassCodesResultJson().containsKey(region))
                     continue;
-                System.out.println(region);
+
                 if (tid >= klass.getKlassCodesResultJson().get(region).getFromYear() && tid < klass.getKlassCodesResultJson().get(region).getToYear()) {
-                    if (region.equals("EAK"))
+                    if (region.equals("EAK") && changedRegion) {
                         region = "0";
-                    if (checkSize(regionValues, true) >= 790000) {
+                    }
+                    if (checkSize(regionValues, true) >= 750000) {
                         addToFilteredMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
                         added = true;
                         regionValues = new ArrayList<>();
@@ -75,29 +72,29 @@ public class MetadataBuilder {
         SsbMetadataVariables regionVar = metadata.getVariables().get(findRegionInList());
         boolean added = false;
 
-            List<String> regionValues = new ArrayList<>();
-            List<String> regionValueTexts = new ArrayList<>();
+        List<String> regionValues = new ArrayList<>();
+        List<String> regionValueTexts = new ArrayList<>();
 
-            for (String region : regionVar.getValues()) {
-                if (checkSize(regionValues, false) >= 790000) {
-                    addToFilteredMap("", null, regionVar, regionValues, regionValueTexts);
-                    added = true;
-                    regionValues = new ArrayList<>();
-                    regionValueTexts = new ArrayList<>();
-                    int i = regionVar.getValues().indexOf(region);
-                    regionValues.add(region);
-                    regionValueTexts.add(regionVar.getValues().get(i));
-                } else {
-                    int i = regionVar.getValues().indexOf(region);
-                    regionValues.add(region);
-                    regionValueTexts.add(regionVar.getValues().get(i));
-                    added = false;
-                }
-            }
-
-            if (!added) {
+        for (String region : regionVar.getValues()) {
+            if (checkSize(regionValues, false) >= 750000) {
                 addToFilteredMap("", null, regionVar, regionValues, regionValueTexts);
+                added = true;
+                regionValues = new ArrayList<>();
+                regionValueTexts = new ArrayList<>();
+                int i = regionVar.getValues().indexOf(region);
+                regionValues.add(region);
+                regionValueTexts.add(regionVar.getValues().get(i));
+            } else {
+                int i = regionVar.getValues().indexOf(region);
+                regionValues.add(region);
+                regionValueTexts.add(regionVar.getValues().get(i));
+                added = false;
             }
+        }
+
+        if (!added) {
+            addToFilteredMap("", null, regionVar, regionValues, regionValueTexts);
+        }
 
         return filteredMetadata;
     }
