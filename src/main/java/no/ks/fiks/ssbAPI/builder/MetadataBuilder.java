@@ -22,7 +22,14 @@ public class MetadataBuilder {
         this.filteredMetadata = new LinkedHashMap<>();
     }
 
-    public Map<Integer, List<SsbMetadataVariables>> filterMetadata() {
+    public Map<Integer, List<SsbMetadataVariables>> buildMetadata() {
+        if (klass == null || findRegionInList() == -1)
+            return buildUnfilteredMetadata();
+        else
+            return buildFilteredMetadata();
+    }
+
+    private Map<Integer, List<SsbMetadataVariables>> buildFilteredMetadata() {
         SsbMetadataVariables tidVar = metadata.getVariables().get(findTidInList());
         SsbMetadataVariables regionVar = metadata.getVariables().get(findRegionInList());
         boolean added = false;
@@ -68,32 +75,32 @@ public class MetadataBuilder {
         return filteredMetadata;
     }
 
-    public Map<Integer, List<SsbMetadataVariables>> buildMetadata() {
-        SsbMetadataVariables regionVar = metadata.getVariables().get(findRegionInList());
+    private Map<Integer, List<SsbMetadataVariables>> buildUnfilteredMetadata() {
+        SsbMetadataVariables firstVar = metadata.getVariables().get(0);
         boolean added = false;
 
-        List<String> regionValues = new ArrayList<>();
-        List<String> regionValueTexts = new ArrayList<>();
+        List<String> firstVarValues = new ArrayList<>();
+        List<String> firstVarValueTexts = new ArrayList<>();
 
-        for (String region : regionVar.getValues()) {
-            if (checkSize(regionValues, false) >= 750000) {
-                addToFilteredMap("", null, regionVar, regionValues, regionValueTexts);
+        for (String region : firstVar.getValues()) {
+            if (checkSize(firstVarValues, false) >= 750000) {
+                addToFilteredMap("", null, firstVar, firstVarValues, firstVarValueTexts);
                 added = true;
-                regionValues = new ArrayList<>();
-                regionValueTexts = new ArrayList<>();
-                int i = regionVar.getValues().indexOf(region);
-                regionValues.add(region);
-                regionValueTexts.add(regionVar.getValues().get(i));
+                firstVarValues = new ArrayList<>();
+                firstVarValueTexts = new ArrayList<>();
+                int i = firstVar.getValues().indexOf(region);
+                firstVarValues.add(region);
+                firstVarValueTexts.add(firstVar.getValues().get(i));
             } else {
-                int i = regionVar.getValues().indexOf(region);
-                regionValues.add(region);
-                regionValueTexts.add(regionVar.getValues().get(i));
+                int i = firstVar.getValues().indexOf(region);
+                firstVarValues.add(region);
+                firstVarValueTexts.add(firstVar.getValues().get(i));
                 added = false;
             }
         }
 
         if (!added) {
-            addToFilteredMap("", null, regionVar, regionValues, regionValueTexts);
+            addToFilteredMap("", null, firstVar, firstVarValues, firstVarValueTexts);
         }
 
         return filteredMetadata;
