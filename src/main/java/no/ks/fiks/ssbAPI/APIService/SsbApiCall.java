@@ -33,10 +33,11 @@ public class SsbApiCall {
     private List<URL> klassListUrl;
     private SsbMetadata metadata;
     private SsbKlass klass;
-    private final int numberOfYears;
+    private int numberOfYears;
 
     public SsbApiCall(String metadataTableNumber, int numberOfYears, String... classifications) {
         Optional<String> metadataTableNumberCheckNull = Optional.ofNullable(metadataTableNumber);
+
         this.numberOfYears = numberOfYears;
         try {
             String urlMetadata = "https://data.ssb.no/api/v0/no/table/";
@@ -44,7 +45,11 @@ public class SsbApiCall {
                 this.metadataUrl = new URL(urlMetadata + metadataTableNumber);
 
             if (classifications.length != 0) {
-                int urlKlassYear = Calendar.getInstance().get(Calendar.YEAR) - numberOfYears;
+                int urlKlassYear = 0;
+                if (numberOfYears > 0)
+                    urlKlassYear = Calendar.getInstance().get(Calendar.YEAR) - numberOfYears;
+                else
+                    urlKlassYear = 1000;
                 klassListUrl = new ArrayList<>();
                 for (String klassNumber : classifications) {
                     String urlKlassStart = "https://data.ssb.no/api/klass/v1/classifications/";
@@ -62,8 +67,6 @@ public class SsbApiCall {
             if (classifications.length != 0) {
                 klassApiCall();
             }
-            if (numberOfYears != 0)
-                filterYears();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -81,12 +84,10 @@ public class SsbApiCall {
     public void metadataApiCall(String tableNumber, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
         metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
-
     }
 
     public void metadataApiCall(Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
-
     }
 
     private void klassApiCall() throws IOException {
@@ -99,6 +100,7 @@ public class SsbApiCall {
     }
 
     public List<String> tableApiCall() throws IOException {
+        filterYears();
         if (klass == null) {
             return klassUnfilteredSsbCall();
         } else {
@@ -107,7 +109,7 @@ public class SsbApiCall {
     }
 
     private List<String> klassUnfilteredSsbCall() throws IOException {
-        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass, numberOfYears);
+        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
         Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.buildMetadata();
         List<String> queryList = new ArrayList<>();
         for (int key : filteredMetadata.keySet()) {
@@ -117,9 +119,10 @@ public class SsbApiCall {
     }
 
     private List<String> ssbApiCall() throws IOException {
-        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass, numberOfYears);
+        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
         Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.filterMetadata();
         List<String> queryList = new ArrayList<>();
+
         for (int key : filteredMetadata.keySet()) {
             queryBuilder(filteredMetadata, queryList, key);
         }
@@ -172,6 +175,10 @@ public class SsbApiCall {
             System.err.println("Timeout from server, sleeping for 60 seconds and retrying");
             retryQuery(60000);
             return false;
+        } else if (connection.getResponseCode() == 400) {
+            System.err.println("Bad request, retrying...");
+            retryQuery(5000);
+            return false;
         }
         return true;
     }
@@ -186,8 +193,9 @@ public class SsbApiCall {
 
     private void queryBuilder(Map<Integer, List<SsbMetadataVariables>> filteredMetadata, List<String> queryList, int key) throws IOException {
         StringBuilder queryTwo = new StringBuilder();
-        for (SsbMetadataVariables metadataVariables : filteredMetadata.get(key))
+        for (SsbMetadataVariables metadataVariables : filteredMetadata.get(key)) {
             queryTwo.append(buildString(metadataVariables));
+        }
         queryTwo = new StringBuilder(queryTwo.substring(0, queryTwo.length() - 1));
         String queryOne = "{\"query\": [";
         String queryThree = "],\"response\": {\"format\": \"json-stat2\"}}";
@@ -208,8 +216,14 @@ public class SsbApiCall {
     private void filterYears() {
         for (SsbMetadataVariables metadataVariables : metadata.getVariables()) {
             if (metadataVariables.getCode().equals("Tid")) {
+                if (metadataVariables.getValues().size() < numberOfYears)
+                    numberOfYears = metadataVariables.getValues().size();
+
+                if (numberOfYears == 0)
+                    throw new IndexOutOfBoundsException("Number of years cannot be 0, either -1 or > 0");
                 metadataVariables.getValues().subList(0, metadataVariables.getValues().size() - numberOfYears).clear();
             }
+
         }
     }
 
