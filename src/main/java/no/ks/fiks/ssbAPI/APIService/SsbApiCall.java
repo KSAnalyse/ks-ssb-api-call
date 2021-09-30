@@ -16,6 +16,18 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * <h1>SSB API calls</h1>
+ *
+ * SsbApiCall simplifies API calls to the ssb.no API. By supplying table number with the number of and calling tableApiCall you will
+ * get a list back with the query results.
+ *
+ * @author Hama Keli
+ * @version 1.0.1
+ * @since 2014-09-29
+ */
+
+
 public class SsbApiCall {
     private URL metadataUrl;
     private List<URL> klassListUrl;
@@ -50,6 +62,8 @@ public class SsbApiCall {
             if (classifications.length != 0) {
                 klassApiCall();
             }
+            if (numberOfYears != 0)
+                filterYears();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -164,7 +178,7 @@ public class SsbApiCall {
 
     private void retryQuery(int waitTimer) {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(waitTimer);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -189,6 +203,14 @@ public class SsbApiCall {
         }
         values = new StringBuilder(values.substring(0, values.length() - 2));
         return "{ \"code\": \"" + test.getCode() + "\", \"selection\": { \"filter\": \"item\", \"values\": [" + values + "]}},";
+    }
+
+    private void filterYears() {
+        for (SsbMetadataVariables metadataVariables : metadata.getVariables()) {
+            if (metadataVariables.getCode().equals("Tid")) {
+                metadataVariables.getValues().subList(0, metadataVariables.getValues().size() - numberOfYears).clear();
+            }
+        }
     }
 
     public SsbMetadata getMetadata() {
