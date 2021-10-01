@@ -22,18 +22,37 @@ import java.util.*;
  * SsbApiCall simplifies API calls to the ssb.no API. By supplying table number with the number of and calling tableApiCall you will
  * get a list back with the query results.
  *
+ * The SsbApiClass is where most of the calls happen, the other classes is mostly for organising, filtering and structuring
+ * the data before calling tableApiCall to query the API.
+ *
+ *
  * @author Hama Keli
- * @version 1.0.1
- * @since 2014-09-29
+ * @version 1.0.2
+ * @since 2021-09-29
  */
 
 
 public class SsbApiCall {
+
     private URL metadataUrl;
     private List<URL> klassListUrl;
     private SsbMetadata metadata;
     private SsbKlass klass;
     private int numberOfYears;
+
+    /**
+     * <h2>SsbApiCall Constructor</h2>
+     * The constructor gets two mandatory parameters and one var-args one.
+     * It checks that table number is present before combining the metadata URL with the table number with the API adress.
+     * Then checks if classification codes was provided, if it was it will combine the url string with the code(s) provided
+     * and the start year. It then adds the URL's to a List.
+     *
+     * It will then try to run metadataApiCall and klassApiCall.
+     *
+     * @param metadataTableNumber This is the table number you want to query
+     * @param numberOfYears This is the number of years you wish to query for that table
+     * @param classifications This is the classification codes you wish to filter against.
+     */
 
     public SsbApiCall(String metadataTableNumber, int numberOfYears, String... classifications) {
         Optional<String> metadataTableNumberCheckNull = Optional.ofNullable(metadataTableNumber);
@@ -72,23 +91,53 @@ public class SsbApiCall {
         }
     }
 
+    /**
+     * This method creates a SsbMetadata object by calling apiCall.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
+
     private void metadataApiCall() throws IOException {
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
     }
+
+    /**
+     * This method updates the metadata URL and creates a SsbMetadata object.
+     * @param tableNumber This is the table number you want to query.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
 
     public void metadataApiCall(String tableNumber) throws IOException {
         metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
     }
 
+    /**
+     * This method updates the metadata URL and creates a SsbMetadata object with a metadata filter.
+     * @param tableNumber This is the table number you want to query.
+     * @param metadataFilter This is a Map of filters for the metadata.
+     * @param removeAllBut This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
+
     public void metadataApiCall(String tableNumber, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
         metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
     }
 
+    /**
+     * This method creates a SsbMetadata object with metadata filter.
+     * @param metadataFilter This is a Map of filters for the metadata.
+     * @param removeAllBut This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
     public void metadataApiCall(Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
     }
+
+    /**
+     * This method creates a SsbKlass object and adds the query result to a List. It then calls on convertStringToJson with the created List.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
 
     private void klassApiCall() throws IOException {
         List<String> klassResult = new ArrayList<>();
@@ -98,6 +147,15 @@ public class SsbApiCall {
         klass = new SsbKlass();
         klass.convertStringToJson(klassResult);
     }
+
+    /**
+     * This method first checks if year is bigger than zero, so it can filter the 'Tid' metadata.
+     * Then it creates a MetadataBuilder object, then a Map is populated with List of SsbMetadataVariables.
+     * It then runs queryBuilder to build the query in a structure the API will accept and returns the list of results.
+     *
+     * @return Returns a List of the query results.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
 
     public List<String> tableApiCall() throws IOException {
         if (numberOfYears > 0) {
@@ -112,6 +170,16 @@ public class SsbApiCall {
         }
         return queryList;
     }
+
+    /**
+     * This method handles all the API calls to the two SSB API's. Depending on what methodCall it does different things.
+     *
+     * @param methodCall This String says which API it queries and how.
+     * @param url This is the URL it will query.
+     * @param query This is the query String for when used to query a table.
+     * @return Returns the result of the API calls.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
 
     private String apiCall(String methodCall, URL url, String query) throws IOException {
 
@@ -146,6 +214,15 @@ public class SsbApiCall {
         return IOUtils.toString(url.openStream());
     }
 
+    /**
+     * This method handles the different http response codes we might get. If the error is caused from something on our side
+     * it will throw an IOException. If the error is Server-side it will retry after X-Seconds, depending on which error we get.
+     *
+     * @param connection This is the connection to the API.
+     * @return Returns false if it failed because of an error from SSB. Returns true if no errors.
+     * @throws IOException Throws IOException if HttpUrlConnection encounters an error when querying.
+     */
+
     private boolean handleResponseCodeErrors(HttpURLConnection connection) throws IOException {
         if (connection.getResponseCode() == 403)
             throw new IOException("Query is too big, please submit a bug report on git project. " + connection.getResponseCode());
@@ -167,6 +244,11 @@ public class SsbApiCall {
         return true;
     }
 
+    /**
+     * Simple method that waits based on waitTimer.
+     *
+     * @param waitTimer This int determines how long the thread should wait.
+     */
     private void retryQuery(int waitTimer) {
         try {
             Thread.sleep(waitTimer);
@@ -174,6 +256,15 @@ public class SsbApiCall {
             e.printStackTrace();
         }
     }
+
+    /**
+     * This method builds the query based on the metadata provided from Metadata builder.
+     *
+     * @param filteredMetadata This is a Map of Lists that has the metadata which it builds the query from.
+     * @param queryList This is the List of query results.
+     * @param key This is the Map key.
+     * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     */
 
     private void queryBuilder(Map<Integer, List<SsbMetadataVariables>> filteredMetadata, List<String> queryList, int key) throws IOException {
         StringBuilder queryTwo = new StringBuilder();
@@ -187,15 +278,26 @@ public class SsbApiCall {
         queryList.add(apiCall("table", metadataUrl, query));
     }
 
-    private String buildString(SsbMetadataVariables test) {
+    /**
+     * This is a helper method of queryBuilder that builds the code section of the query correctly as a String before returning it to queryBuilder.
+     * It builds the whole code section for all the variables in the metadata.
+     *
+     * @param ssbMetadataVariables This is object of SsbMetadataVariables.
+     * @return Returns the finished 'code' section of the query.
+     */
+
+    private String buildString(SsbMetadataVariables ssbMetadataVariables) {
         StringBuilder values = new StringBuilder();
-        for (String s : test.getValues()) {
+        for (String s : ssbMetadataVariables.getValues()) {
             values.append("\"").append(s).append("\", ");
         }
         values = new StringBuilder(values.substring(0, values.length() - 2));
-        return "{ \"code\": \"" + test.getCode() + "\", \"selection\": { \"filter\": \"item\", \"values\": [" + values + "]}},";
+        return "{ \"code\": \"" + ssbMetadataVariables.getCode() + "\", \"selection\": { \"filter\": \"item\", \"values\": [" + values + "]}},";
     }
 
+    /**
+     * This method removes all years/quarters/months if numberOfYears is bigger than 0.
+     */
     private void filterYears() {
         for (SsbMetadataVariables metadataVariables : metadata.getVariables()) {
             if (metadataVariables.getCode().equals("Tid")) {
@@ -213,10 +315,19 @@ public class SsbApiCall {
         }
     }
 
+    /**
+     *
+     * @return Returns metadata object.
+     */
+
     public SsbMetadata getMetadata() {
         return metadata;
     }
 
+    /**
+     *
+     * @return Returns klass object.
+     */
     public SsbKlass getKlass() {
         return klass;
     }
