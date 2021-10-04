@@ -9,13 +9,33 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <h1>SsbKlass</h1>
+ * <p>
+ * SsbKlass is a simple class that deserializes the JSON we get back from querying for the classification codes.
+ * It also keep track of all the codes as an object.
+ */
+
 public class SsbKlass {
     private final Map<String, SsbKlassCodes> klassCodesResultJson;
 
+    /**
+     * Simple constructor that initializes the LinkedHashmap
+     */
     public SsbKlass() {
         this.klassCodesResultJson = new LinkedHashMap<>();
     }
 
+    /**
+     * <h1>convertStringToJson</h1>
+     * <p>
+     * This method gets a list of classification code query results, deserializes them and adds them to a LinkedHashmap.
+     * It also makes sure that the codes that show up several times only gets their dates updated instead of it being
+     * completely removed.
+     *
+     * @param klassCodes This is a list of classification codes query results.
+     * @throws JsonProcessingException
+     */
     public void convertStringToJson(List<String> klassCodes) throws JsonProcessingException {
         for (String codes : klassCodes) {
             ObjectMapper mapper = new ObjectMapper();
@@ -38,6 +58,12 @@ public class SsbKlass {
             }
         }
     }
+
+    /**
+     * Returns the linkedHashmap
+     *
+     * @return Returns the LinkedHashMap of classification region codes objects.
+     */
 
     public Map<String, SsbKlassCodes> getKlassCodesResultJson() {
         return klassCodesResultJson;

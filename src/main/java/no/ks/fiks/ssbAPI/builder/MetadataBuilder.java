@@ -22,13 +22,6 @@ import java.util.stream.IntStream;
 
 public class MetadataBuilder {
 
-    /**
-     * @ metadata SsbMetadata object.
-     * @param klass SsbKlass object
-     * @param builtMetadata The Map with the metadata for querying.
-     * @param query A query counter.
-     */
-
     private final SsbMetadata metadata;
     private final SsbKlass klass;
     private final Map<Integer, List<SsbMetadataVariables>> builtMetadata;
@@ -55,9 +48,9 @@ public class MetadataBuilder {
      * This method checks if you have provided classification codes or if the 'Region' variable is available in
      * the metadata class and calls on the correct method. Either {@link #buildFilteredMetadata()} or {@link #buildUnfilteredMetadata()}.
      *
+     * @return Returns the method it calls.
      * @see #buildUnfilteredMetadata()
      * @see #buildFilteredMetadata()
-     * @return Returns the method it calls.
      */
 
     public Map<Integer, List<SsbMetadataVariables>> buildMetadata() {
@@ -153,8 +146,8 @@ public class MetadataBuilder {
      * classification code lists and years. It's also the method that handles tables without 'Region' metadata. See the
      * {@link #buildFilteredMetadata()} method.
      *
-     * @see #buildFilteredMetadata()
      * @return Returns unfiltered map of metadata lists.
+     * @see #buildFilteredMetadata()
      */
 
     private Map<Integer, List<SsbMetadataVariables>> buildUnfilteredMetadata() {
@@ -190,18 +183,18 @@ public class MetadataBuilder {
 
     /**
      * <h1>{@link #addToMap(String, SsbMetadataVariables, SsbMetadataVariables, List, List)}</h1>
-     *
+     * <p>
      * This method adds the lists from metadata and the custom build metadata to the Map.
      * Loops through metadata variables and adds them to the Map.
      *
+     * @param sTid                This is the String value of 'Tid'
+     * @param tidVar              This is the 'Tid' object from buildFilteredMetadata
+     * @param iteratingVar        This is variable object the {@link #buildFilteredMetadata()}/{@link #buildUnfilteredMetadata()} iterates on.
+     * @param iteratingValues     This is variable list of values the {@link #buildFilteredMetadata()}/{@link #buildUnfilteredMetadata()} built.
+     * @param iteratingValueTexts This is variable list of value texts the {@link #buildFilteredMetadata()}/{@link #buildUnfilteredMetadata()} built.
      * @see SsbMetadataVariables
      * @see #buildFilteredMetadata()
      * @see #buildUnfilteredMetadata()
-     * @param sTid This is the String value of 'Tid'
-     * @param tidVar This is the 'Tid' object from buildFilteredMetadata
-     * @param iteratingVar This is variable object the {@link #buildFilteredMetadata()}/{@link #buildUnfilteredMetadata()} iterates on.
-     * @param iteratingValues This is variable list of values the {@link #buildFilteredMetadata()}/{@link #buildUnfilteredMetadata()} built.
-     * @param iteratingValueTexts This is variable list of value texts the {@link #buildFilteredMetadata()}/{@link #buildUnfilteredMetadata()} built.
      */
 
     private void addToMap(String sTid, SsbMetadataVariables tidVar, SsbMetadataVariables iteratingVar,
@@ -224,7 +217,7 @@ public class MetadataBuilder {
 
     /**
      * <h1>findTidInList</h1>
-     *
+     * <p>
      * This method finds 'Tid' metadata and returns the position it's in, if it doesn't exist it returns -1.
      *
      * @return Returns the position of 'Tid' variable in metadata variables list.
@@ -238,7 +231,7 @@ public class MetadataBuilder {
 
     /**
      * <h1>findRegionsInList</h1>
-     *
+     * <p>
      * This method finds 'Region' metadata and returns the position it's in, if it doesn't exist it returns -1.
      *
      * @return Returns the position of 'Region' variable in metadata variables list.
@@ -254,8 +247,8 @@ public class MetadataBuilder {
      * <h1>checkSize</h1>
      * This method calculates the size of the current list of metadata.
      *
-     * @param iteratingVar This is the variable we will be iterating on.
-     * @param filtered This is to check if it's coming from {@link #buildFilteredMetadata()} or {@link #buildUnfilteredMetadata()}.
+     * @param iteratingVar     This is the variable we will be iterating on.
+     * @param filtered         This is to check if it's coming from {@link #buildFilteredMetadata()} or {@link #buildUnfilteredMetadata()}.
      * @param iteratingVarName This is the name of the metadata we are iterating on.
      * @return Returns the size of the list.
      */

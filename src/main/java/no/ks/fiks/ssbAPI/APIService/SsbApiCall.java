@@ -18,13 +18,12 @@ import java.util.*;
 
 /**
  * <h1>SSB API calls</h1>
- *
- * SsbApiCall simplifies API calls to the ssb.no API. By supplying table number with the number of and calling tableApiCall you will
- * get a list back with the query results.
- *
+ * <p>
+ * SsbApiCall simplifies API calls to the ssb.no API. By supplying table number with the number of and calling {@link #tableApiCall()}
+ * you will get a list back with the query results.
+ * <p>
  * The SsbApiClass is where most of the calls happen, the other classes is mostly for organising, filtering and structuring
  * the data before calling tableApiCall to query the API.
- *
  *
  * @author Hama Keli
  * @version 1.0.2
@@ -41,17 +40,19 @@ public class SsbApiCall {
     private int numberOfYears;
 
     /**
-     * <h2>SsbApiCall Constructor</h2>
+     * <h1>SsbApiCall Constructor</h1>
      * The constructor gets two mandatory parameters and one var-args one.
-     * It checks that table number is present before combining the metadata URL with the table number with the API adress.
+     * It checks that table number is present before combining the metadata URL with the table number with the API address.
      * Then checks if classification codes was provided, if it was it will combine the url string with the code(s) provided
      * and the start year. It then adds the URL's to a List.
-     *
+     * <p>
      * It will then try to run metadataApiCall and klassApiCall.
      *
      * @param metadataTableNumber This is the table number you want to query
-     * @param numberOfYears This is the number of years you wish to query for that table
-     * @param classifications This is the classification codes you wish to filter against.
+     * @param numberOfYears       This is the number of years you wish to query for that table
+     * @param classifications     This is the classification codes you wish to filter against.
+     * @see #metadataApiCall()
+     * @see #klassApiCall()
      */
 
     public SsbApiCall(String metadataTableNumber, int numberOfYears, String... classifications) {
@@ -92,8 +93,11 @@ public class SsbApiCall {
     }
 
     /**
-     * This method creates a SsbMetadata object by calling apiCall.
+     * <h1>metadataApiCall</h1>
+     * This method creates a SsbMetadata object by calling {@link #apiCall(String, URL, String)}.
+     *
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see #apiCall(String, URL, String)
      */
 
     private void metadataApiCall() throws IOException {
@@ -101,9 +105,13 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>metadataApiCall</h1>
+     * <p>
      * This method updates the metadata URL and creates a SsbMetadata object.
+     *
      * @param tableNumber This is the table number you want to query.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see #apiCall(String, URL, String)
      */
 
     public void metadataApiCall(String tableNumber) throws IOException {
@@ -112,11 +120,15 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>metadataApiCall</h1>
+     * <p>
      * This method updates the metadata URL and creates a SsbMetadata object with a metadata filter.
-     * @param tableNumber This is the table number you want to query.
+     *
+     * @param tableNumber    This is the table number you want to query.
      * @param metadataFilter This is a Map of filters for the metadata.
-     * @param removeAllBut This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
+     * @param removeAllBut   This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see #apiCall(String, URL, String)
      */
 
     public void metadataApiCall(String tableNumber, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
@@ -125,18 +137,26 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>metadataApiCall</h1>
+     * <p>
      * This method creates a SsbMetadata object with metadata filter.
+     *
      * @param metadataFilter This is a Map of filters for the metadata.
-     * @param removeAllBut This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
+     * @param removeAllBut   This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see #apiCall(String, URL, String)
      */
     public void metadataApiCall(Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
         metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
     }
 
     /**
+     * <h1>klassApiCall</h1>
+     * <p>
      * This method creates a SsbKlass object and adds the query result to a List. It then calls on convertStringToJson with the created List.
+     *
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see #apiCall(String, URL, String)
      */
 
     private void klassApiCall() throws IOException {
@@ -149,12 +169,16 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>tableApiCall</h1>
+     * <p>
      * This method first checks if year is bigger than zero, so it can filter the 'Tid' metadata.
      * Then it creates a MetadataBuilder object, then a Map is populated with List of SsbMetadataVariables.
      * It then runs queryBuilder to build the query in a structure the API will accept and returns the list of results.
      *
      * @return Returns a List of the query results.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see MetadataBuilder
+     * @see #filterYears()
      */
 
     public List<String> tableApiCall() throws IOException {
@@ -172,13 +196,16 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>apiCall</h1>
+     * <p>
      * This method handles all the API calls to the two SSB API's. Depending on what methodCall it does different things.
      *
      * @param methodCall This String says which API it queries and how.
-     * @param url This is the URL it will query.
-     * @param query This is the query String for when used to query a table.
+     * @param url        This is the URL it will query.
+     * @param query      This is the query String for when used to query a table.
      * @return Returns the result of the API calls.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
+     * @see #handleResponseCodeErrors(HttpURLConnection)
      */
 
     private String apiCall(String methodCall, URL url, String query) throws IOException {
@@ -215,6 +242,8 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>handleResponseCodeErrors</h1>
+     * <p>
      * This method handles the different http response codes we might get. If the error is caused from something on our side
      * it will throw an IOException. If the error is Server-side it will retry after X-Seconds, depending on which error we get.
      *
@@ -245,6 +274,8 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>retryQuery</h1>
+     * <p>
      * Simple method that waits based on waitTimer.
      *
      * @param waitTimer This int determines how long the thread should wait.
@@ -258,11 +289,13 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>queryBuilder</h1>
+     * <p>
      * This method builds the query based on the metadata provided from Metadata builder.
      *
      * @param filteredMetadata This is a Map of Lists that has the metadata which it builds the query from.
-     * @param queryList This is the List of query results.
-     * @param key This is the Map key.
+     * @param queryList        This is the List of query results.
+     * @param key              This is the Map key.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
      */
 
@@ -279,6 +312,8 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>buildString</h1>
+     * <p>
      * This is a helper method of queryBuilder that builds the code section of the query correctly as a String before returning it to queryBuilder.
      * It builds the whole code section for all the variables in the metadata.
      *
@@ -296,6 +331,8 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>filterYears</h1>
+     * <p>
      * This method removes all years/quarters/months if numberOfYears is bigger than 0.
      */
     private void filterYears() {
@@ -316,6 +353,7 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>getMetadata</h1>
      *
      * @return Returns metadata object.
      */
@@ -325,6 +363,7 @@ public class SsbApiCall {
     }
 
     /**
+     * <h1>getKlass</h1>
      *
      * @return Returns klass object.
      */

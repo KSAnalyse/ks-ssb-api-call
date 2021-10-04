@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * <h1>SsbMetdata</h1>
+ * This class deserializes the metadata JSON query and creates a list of objects.
+ * It also filters the metadata if the a filter is provided.
+ */
 public class SsbMetadata {
     private final String metadataResult;
     private final List<SsbMetadataVariables> variables;
@@ -15,12 +21,27 @@ public class SsbMetadata {
     private Map<String, List<String>> metadataFilter;
     private boolean removeAllBut;
 
+    /**
+     * This constructor is used if no filter is provided when initializing the object.
+     *
+     * @param metadataResult This is the metadata query result.
+     * @throws JsonProcessingException
+     */
     public SsbMetadata(String metadataResult) throws JsonProcessingException {
         this.metadataResult = metadataResult;
         variables = new ArrayList<>();
         convertStringToJson();
     }
 
+    /**
+     * This constructor is ued if a metadata filter is provided.
+     *
+     * @param metadataResult This is the metadata query result.
+     * @param metadataFilter This is the Map of the metadata which will be filtered.
+     * @param removeAllBut   This boolean is used to determine if it should filter out or only use the variables in the
+     *                       metadata filter.
+     * @throws JsonProcessingException
+     */
     public SsbMetadata(String metadataResult, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws JsonProcessingException {
         this.metadataResult = metadataResult;
         this.metadataFilter = metadataFilter;
@@ -29,6 +50,14 @@ public class SsbMetadata {
         convertStringToJson();
         filterMetadata();
     }
+
+    /**
+     * <h1>convertStringToJson</h1>
+     * <p>
+     * This method deserializes the JSON string from the metadata query and adds them to an object list.
+     *
+     * @throws JsonProcessingException
+     */
 
     private void convertStringToJson() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
@@ -47,14 +76,29 @@ public class SsbMetadata {
         }
     }
 
+    /**
+     * <h1>getTitle</h1>
+     *
+     * @return Returns the title of the table you queried.
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * <h1>getVariables</h1>
+     *
+     * @return Returns the list of objects.
+     */
     public List<SsbMetadataVariables> getVariables() {
         return variables;
     }
 
+    /**
+     * <h1>filterMetadata</h1>
+     * <p>
+     * This method calls on the filter method in SsbMetadataVariables to filter out or only use the filters in the list.
+     */
     private void filterMetadata() {
         for (SsbMetadataVariables metadataVariables : variables) {
             if (metadataFilter.containsKey(metadataVariables.getCode())) {
