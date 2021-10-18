@@ -2,3 +2,4 @@
 *.class
 target/classes/META-INF/MANIFEST.MF
 /out/artifacts/ks_ssb_api_call_jar/ks-ssb-api-call.jar
+/src/main/resources/testMetadataResult2020.json
