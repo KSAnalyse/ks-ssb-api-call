@@ -340,8 +340,7 @@ public class SsbApiCall {
             if (metadataVariables.getCode().equals("Tid")) {
                 if (metadataVariables.getValues().size() < numberOfYears)
                     numberOfYears = metadataVariables.getValues().size();
-                if (numberOfYears == 0)
-                    throw new IndexOutOfBoundsException("Number of years cannot be 0, either -1 or > 0");
+
                 if (metadataVariables.getValues().get(0).length() > 4)
                     if (metadataVariables.getText().equalsIgnoreCase("kvartal"))
                         numberOfYears = numberOfYears * 4;
