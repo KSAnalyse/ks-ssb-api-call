@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,6 +39,7 @@ public class SsbApiCall {
     private SsbMetadata metadata;
     private SsbKlass klass;
     private int numberOfYears;
+    private MetadataBuilder metadataBuilder;
 
     /**
      * <h1>SsbApiCall Constructor</h1>
@@ -65,7 +67,7 @@ public class SsbApiCall {
                 this.metadataUrl = new URL(urlMetadata + metadataTableNumber);
 
             if (classifications.length != 0) {
-                int urlKlassYear = 0;
+                int urlKlassYear;
                 if (numberOfYears > 0)
                     urlKlassYear = Calendar.getInstance().get(Calendar.YEAR) - numberOfYears;
                 else
@@ -83,10 +85,10 @@ public class SsbApiCall {
             mue.printStackTrace();
         }
         try {
-            metadataApiCall();
             if (classifications.length != 0) {
                 klassApiCall();
             }
+            metadataApiCall();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -94,14 +96,16 @@ public class SsbApiCall {
 
     /**
      * <h1>metadataApiCall</h1>
-     * This method creates a SsbMetadata object by calling {@link #apiCall(String, URL, String)}.
+     * This method creates a SsbMetadata object by calling {@link #apiCall(String, URL, String, int)}.
      *
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
-     * @see #apiCall(String, URL, String)
+     * @see #apiCall(String, URL, String, int)
      */
 
     private void metadataApiCall() throws IOException {
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0));
+        this.metadataBuilder = new MetadataBuilder(metadata, klass);
+        buildMetadata();
     }
 
     /**
@@ -111,12 +115,14 @@ public class SsbApiCall {
      *
      * @param tableNumber This is the table number you want to query.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
-     * @see #apiCall(String, URL, String)
+     * @see #apiCall(String, URL, String, int)
      */
 
     public void metadataApiCall(String tableNumber) throws IOException {
         metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""));
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0));
+        this.metadataBuilder = new MetadataBuilder(metadata, klass);
+        buildMetadata();
     }
 
     /**
@@ -128,12 +134,14 @@ public class SsbApiCall {
      * @param metadataFilter This is a Map of filters for the metadata.
      * @param removeAllBut   This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
-     * @see #apiCall(String, URL, String)
+     * @see #apiCall(String, URL, String, int)
      */
 
     public void metadataApiCall(String tableNumber, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
         metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0), metadataFilter, removeAllBut);
+        this.metadataBuilder = new MetadataBuilder(metadata, klass);
+        buildMetadata();
     }
 
     /**
@@ -144,10 +152,20 @@ public class SsbApiCall {
      * @param metadataFilter This is a Map of filters for the metadata.
      * @param removeAllBut   This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
-     * @see #apiCall(String, URL, String)
+     * @see #apiCall(String, URL, String, int)
      */
     public void metadataApiCall(Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, ""), metadataFilter, removeAllBut);
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0), metadataFilter, removeAllBut);
+        this.metadataBuilder = new MetadataBuilder(metadata, klass);
+        buildMetadata();
+    }
+
+    private void buildMetadata() {
+        if (numberOfYears > 0) {
+            filterYears();
+        }
+        metadataBuilder.buildMetadata();
+
     }
 
     /**
@@ -156,17 +174,18 @@ public class SsbApiCall {
      * This method creates a SsbKlass object and adds the query result to a List. It then calls on convertStringToJson with the created List.
      *
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
-     * @see #apiCall(String, URL, String)
+     * @see #apiCall(String, URL, String, int)
      */
 
     private void klassApiCall() throws IOException {
         List<String> klassResult = new ArrayList<>();
         for (URL url : klassListUrl) {
-            klassResult.add(apiCall("klass", url, ""));
+            klassResult.add(apiCall("klass", url, "", 0));
         }
         klass = new SsbKlass();
         klass.convertStringToJson(klassResult);
     }
+
 
     /**
      * <h1>tableApiCall</h1>
@@ -182,11 +201,7 @@ public class SsbApiCall {
      */
 
     public List<String> tableApiCall() throws IOException {
-        if (numberOfYears > 0) {
-            filterYears();
-        }
-        MetadataBuilder metadataBuilder = new MetadataBuilder(metadata, klass);
-        Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.buildMetadata();
+        Map<Integer, List<SsbMetadataVariables>> filteredMetadata = metadataBuilder.getBuiltMetadata();
         List<String> queryList = new ArrayList<>();
 
         for (int key : filteredMetadata.keySet()) {
@@ -205,10 +220,10 @@ public class SsbApiCall {
      * @param query      This is the query String for when used to query a table.
      * @return Returns the result of the API calls.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
-     * @see #handleResponseCodeErrors(HttpURLConnection)
+     * @see #handleResponseCodeErrors(HttpURLConnection, int)
      */
 
-    private String apiCall(String methodCall, URL url, String query) throws IOException {
+    private String apiCall(String methodCall, URL url, String query, int tries) throws IOException {
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestProperty("User-Agent",
@@ -225,12 +240,14 @@ public class SsbApiCall {
                 byte[] input = query.getBytes(StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
-            if (!handleResponseCodeErrors(connection))
-                return apiCall(methodCall, url, query);
+            if (!handleResponseCodeErrors(connection, tries)) {
+                tries++;
+                return apiCall(methodCall, url, query, tries);
+            }
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
                 StringBuilder response = new StringBuilder();
-                String responseLine = null;
+                String responseLine;
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
@@ -252,7 +269,9 @@ public class SsbApiCall {
      * @throws IOException Throws IOException if HttpUrlConnection encounters an error when querying.
      */
 
-    private boolean handleResponseCodeErrors(HttpURLConnection connection) throws IOException {
+    private boolean handleResponseCodeErrors(HttpURLConnection connection, int tries) throws IOException {
+        if (tries > 5)
+            throw new ConnectException("Tried five times, SSB might be down, error: " + connection.getResponseCode());
         if (connection.getResponseCode() == 403)
             throw new IOException("Query is too big, please submit a bug report on git project. " + connection.getResponseCode());
         else if (connection.getResponseCode() == 404)
@@ -308,7 +327,7 @@ public class SsbApiCall {
         String queryOne = "{\"query\": [";
         String queryThree = "],\"response\": {\"format\": \"json-stat2\"}}";
         String query = queryOne + queryTwo + queryThree;
-        queryList.add(apiCall("table", metadataUrl, query));
+        queryList.add(apiCall("table", metadataUrl, query, 0));
     }
 
     /**
@@ -368,5 +387,9 @@ public class SsbApiCall {
      */
     public SsbKlass getKlass() {
         return klass;
+    }
+
+    public int getQuerySize() {
+        return metadataBuilder.getBuiltMetadata().size();
     }
 }
