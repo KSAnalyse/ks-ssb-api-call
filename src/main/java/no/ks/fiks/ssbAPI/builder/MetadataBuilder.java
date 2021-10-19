@@ -43,25 +43,24 @@ public class MetadataBuilder {
     }
 
     /**
-     * <h1>{@link #buildMetadata()}</h1>
+     * <h1>buildMetadata()</h1>
      * <p>
      * This method checks if you have provided classification codes or if the 'Region' variable is available in
      * the metadata class and calls on the correct method. Either {@link #buildFilteredMetadata()} or {@link #buildUnfilteredMetadata()}.
      *
-     * @return Returns the method it calls.
      * @see #buildUnfilteredMetadata()
      * @see #buildFilteredMetadata()
      */
 
-    public Map<Integer, List<SsbMetadataVariables>> buildMetadata() {
+    public void buildMetadata() {
         if (klass == null || findRegionInList() == -1)
-            return buildUnfilteredMetadata();
+            buildUnfilteredMetadata();
         else
-            return buildFilteredMetadata();
+            buildFilteredMetadata();
     }
 
     /**
-     * <h1>{@link #buildFilteredMetadata()}</h1>
+     * <h1>buildFilteredMetadata()</h1>
      * <p>
      * This method filters out the regions for each year you are querying. It filters them by year because some regions
      * are valid in certain years and not all. This is done, so we avoid querying for regions where the value of the row
@@ -81,7 +80,6 @@ public class MetadataBuilder {
      * NOTE: On tables that has 0 as the whole country instead of EAK, we have to switch 0 to EAK and back again. This is done
      * because no classification code list has 0 to identify the whole country.
      *
-     * @return Returns the finished Map of the lists with metadata for the query.
      * @see SsbMetadata
      * @see SsbMetadataVariables
      * @see SsbKlass
@@ -92,7 +90,7 @@ public class MetadataBuilder {
      * @see #addToMap(String, SsbMetadataVariables, SsbMetadataVariables, List, List)
      */
 
-    private Map<Integer, List<SsbMetadataVariables>> buildFilteredMetadata() {
+    private void buildFilteredMetadata() {
         SsbMetadataVariables tidVar = metadata.getVariables().get(findTidInList());
         SsbMetadataVariables regionVar = metadata.getVariables().get(findRegionInList());
         boolean added = false;
@@ -136,7 +134,6 @@ public class MetadataBuilder {
                 addToMap(sTid, tidVar, regionVar, regionValues, regionValueTexts);
             }
         }
-        return builtMetadata;
     }
 
     /**
@@ -146,11 +143,10 @@ public class MetadataBuilder {
      * classification code lists and years. It's also the method that handles tables without 'Region' metadata. See the
      * {@link #buildFilteredMetadata()} method.
      *
-     * @return Returns unfiltered map of metadata lists.
      * @see #buildFilteredMetadata()
      */
 
-    private Map<Integer, List<SsbMetadataVariables>> buildUnfilteredMetadata() {
+    private void buildUnfilteredMetadata() {
         SsbMetadataVariables firstVar = metadata.getVariables().get(0);
         boolean added = false;
 
@@ -177,12 +173,10 @@ public class MetadataBuilder {
         if (!added) {
             addToMap("", null, firstVar, firstVarValues, firstVarValueTexts);
         }
-
-        return builtMetadata;
     }
 
     /**
-     * <h1>{@link #addToMap(String, SsbMetadataVariables, SsbMetadataVariables, List, List)}</h1>
+     * <h1>addToMap</h1>
      * <p>
      * This method adds the lists from metadata and the custom build metadata to the Map.
      * Loops through metadata variables and adds them to the Map.
@@ -264,5 +258,9 @@ public class MetadataBuilder {
                 count = count * metadataVariables.getValues().size();
         }
         return count;
+    }
+
+    public Map<Integer, List<SsbMetadataVariables>> getBuiltMetadata() {
+        return builtMetadata;
     }
 }
