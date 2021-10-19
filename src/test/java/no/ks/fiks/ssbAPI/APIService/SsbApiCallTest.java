@@ -19,7 +19,7 @@ class SsbApiCallTest {
     private SsbApiCall ssbApiCall;
     private SsbMetadata metadata;
     private SsbKlass klass;
-    private Map<String, List<String>> filter = new LinkedHashMap<>();
+    private final Map<String, List<String>> filter = new LinkedHashMap<>();
 
     @BeforeEach
     void setObjects() {
@@ -38,7 +38,6 @@ class SsbApiCallTest {
 
     @Test
     void testMetadataApiCallInitial() {
-        System.out.println(metadata.getVariables().get(1).getValues().size());
         assertEquals("11816: Utvalgte nøkkeltall for samferdsel , etter region, statistikkvariabel og år", metadata.getTitle());
     }
 

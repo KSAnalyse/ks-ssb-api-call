@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,16 @@ class SsbMetadataTest {
         localFilter.put("KOKkommuneregion0000", region);
         localFilter.put("ContentsCode", statistikkvariabel);
         ssbApiCallFilter.metadataApiCall(localFilter, true);
+        ssbApiCallFilter.tableApiCall();
         metadata = ssbApiCallFilter.getMetadata();
     }
 
     @Test
     void getTitle() {
-        assertEquals(metadata.getTitle(), "11816: Utvalgte nøkkeltall for samferdsel , etter region, statistikkvariabel og år");
+        String expectedString = "11816: Utvalgte nøkkeltall for samferdsel , etter region, statistikkvariabel og år";
+        byte[] charset = expectedString.getBytes();
+        String expected = new String(charset, StandardCharsets.UTF_8);
+        assertEquals(metadata.getTitle(), expected);
     }
 
     @Test
@@ -59,6 +64,6 @@ class SsbMetadataTest {
                 () -> assertEquals(List.of("EAK", "3001"), metadata.getVariables().get(0).getValues()),
                 () -> assertEquals(List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000"), metadata.getVariables().get(1).getValues()),
                 () -> assertEquals(List.of("2016", "2017", "2018", "2019", "2020"), metadata.getVariables().get(2).getValues())
-                );
+        );
     }
 }
