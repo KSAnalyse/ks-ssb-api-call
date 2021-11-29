@@ -3,11 +3,6 @@
     <output-path>$PROJECT_DIR$/out/artifacts/ks_ssb_api_call_jar</output-path>
     <root id="archive" name="ks-ssb-api-call.jar">
       <element id="module-output" name="ks-ssb-api-call" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-io/commons-io/2.4/commons-io-2.4.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.12.5/jackson-core-2.12.5.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.12.5/jackson-databind-2.12.5.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-annotations/2.12.5/jackson-annotations-2.12.5.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/directory/studio/org.apache.commons.io/2.4/org.apache.commons.io-2.4.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

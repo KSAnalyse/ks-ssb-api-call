@@ -153,24 +153,6 @@ class SsbApiCallTest {
         localFilter.put("Tid", aar);
 
         String jsonOne = Files.readString(Path.of("src/main/resources/testMetadataResult.json"));
-        /*String[] jsonSplit = new String[100];
-
-        int jsonLen = jsonOne.length() / 100;
-        int lastLen = 0;
-        for (int i = 0; i < jsonSplit.length - 1; i++) {
-            jsonSplit[i] = jsonOne.substring(jsonLen * i, jsonLen * (i + 1));
-            lastLen = jsonLen * (i + 1);
-        }
-        jsonSplit[99] = jsonOne.substring(lastLen);
-        jsonOne = "";
-        StringBuilder cleanedJson = new StringBuilder();
-        for (String s : jsonSplit) {
-            s = s.replaceAll("\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)", "");
-            s = s.replaceAll("\\t", "");
-            s = s.replaceAll("\\n", "");
-
-            cleanedJson.append(s);
-        }*/
         ssbApiCall.metadataApiCall(localFilter, true);
         jsonOne = jsonOne.replaceAll("\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)", "");
         List<String> queryList = ssbApiCall.tableApiCall();
@@ -234,5 +216,11 @@ class SsbApiCallTest {
     @Test
     void getKlass() {
         assertNotNull(klass);
+    }
+
+    @Test
+    void randomTest() throws IOException {
+        ssbApiCall.metadataApiCall("11211");
+        ssbApiCall.tableApiCall();
     }
 }

@@ -277,11 +277,11 @@ public class SsbApiCall {
         else if (connection.getResponseCode() == 404)
             throw new IOException("Either wrong url (check that table exists) or syntax error on the query. If table exists, submit bug report. " + connection.getResponseCode());
         else if (connection.getResponseCode() == 429) {
-            System.err.println("Too many queries... retrying...");
+            System.err.println("Too many queries... retrying..." + connection.getResponseCode());
             retryQuery(5000);
             return false;
         } else if (connection.getResponseCode() == 503) {
-            System.err.println("Timeout from server, sleeping for 60 seconds and retrying");
+            System.err.println("Timeout from server, sleeping for 60 seconds and retrying" + connection.getResponseCode());
             retryQuery(60000);
             return false;
         } else if (connection.getResponseCode() == 400) {
