@@ -21,8 +21,8 @@ class SsbMetadataTest {
 
     @BeforeAll
     static void setSsbMetadata() throws IOException {
-        ssbApiCall = new SsbApiCall("11816", 5, "131", "104", "214", "231", "127");
-        ssbApiCallFilter = new SsbApiCall("11816", 5, "131", "104", "214", "231", "127");
+        ssbApiCall = new SsbApiCall("11816", 5, null, "131", "104", "214", "231", "127");
+        ssbApiCallFilter = new SsbApiCall("11816", 5, null, "131", "104", "214", "231", "127");
         List<String> region = List.of("EAK", "3001");
         List<String> statistikkvariabel = List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000");
         Map<String, List<String>> localFilter = new LinkedHashMap<>();

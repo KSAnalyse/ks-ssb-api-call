@@ -57,9 +57,9 @@ public class SsbApiCall {
      * @see #klassApiCall()
      */
 
-    public SsbApiCall(String metadataTableNumber, int numberOfYears, String... classifications) {
+    public SsbApiCall(String metadataTableNumber, int numberOfYears, Map<String, List<String>> metadataFilter, String... classifications) {
         Optional<String> metadataTableNumberCheckNull = Optional.ofNullable(metadataTableNumber);
-
+        Optional<Map<String, List<String>>> filter = Optional.ofNullable(metadataFilter);
         this.numberOfYears = numberOfYears;
         try {
             String urlMetadata = "https://data.ssb.no/api/v0/no/table/";
@@ -88,7 +88,10 @@ public class SsbApiCall {
             if (classifications.length != 0) {
                 klassApiCall();
             }
-            metadataApiCall();
+            if (filter.isPresent())
+                metadataApiCall(metadataFilter, false);
+            else
+                metadataApiCall();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }

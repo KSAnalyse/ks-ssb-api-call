@@ -23,7 +23,7 @@ class SsbApiCallTest {
 
     @BeforeEach
     void setObjects() {
-        ssbApiCall = new SsbApiCall("11816", -1, "131", "104", "214", "231", "127");
+        ssbApiCall = new SsbApiCall("11816", -1, null,"131", "104", "214", "231", "127");
         metadata = ssbApiCall.getMetadata();
         klass = ssbApiCall.getKlass();
         List<String> region = List.of("EAK", "EAKUO", "3001", "EKG16", "EKG17");
@@ -143,7 +143,7 @@ class SsbApiCallTest {
 
     @Test
     void tableApiCallUnfiltered() throws IOException {
-        ssbApiCall = new SsbApiCall("11816", -1);
+        ssbApiCall = new SsbApiCall("11816", -1, null);
         List<String> region = List.of("EAK", "3001", "0101");
         List<String> statistikkvariabel = List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000");
         List<String> aar = List.of("2016", "2020");
@@ -166,7 +166,7 @@ class SsbApiCallTest {
 
     @Test
     void filterYears() throws IOException {
-        ssbApiCall = new SsbApiCall("11816", 2);
+        ssbApiCall = new SsbApiCall("11816", 2, null);
         ssbApiCall.tableApiCall();
         metadata = ssbApiCall.getMetadata();
         assertEquals(List.of("2019", "2020"), metadata.getVariables().get(2).getValues());
@@ -174,7 +174,7 @@ class SsbApiCallTest {
 
     @Test
     void filterYearsMoreThanListSize() throws IOException {
-        ssbApiCall = new SsbApiCall("11816", 10);
+        ssbApiCall = new SsbApiCall("11816", 10, null);
         ssbApiCall.tableApiCall();
         metadata = ssbApiCall.getMetadata();
         assertEquals(List.of("2015", "2016", "2017", "2018", "2019", "2020"), metadata.getVariables().get(2).getValues());
@@ -182,7 +182,7 @@ class SsbApiCallTest {
 
     @Test
     void quarterlyToYearConversionApiCall() throws IOException {
-        ssbApiCall = new SsbApiCall("01222", 5);
+        ssbApiCall = new SsbApiCall("01222", 5, null);
         metadata = ssbApiCall.getMetadata();
         ssbApiCall.tableApiCall();
         int count = 0;
@@ -196,7 +196,7 @@ class SsbApiCallTest {
 
     @Test
     void monthlyToYearConversionApiCall() throws IOException {
-        ssbApiCall = new SsbApiCall("08655", 5);
+        ssbApiCall = new SsbApiCall("08655", 5, null);
         metadata = ssbApiCall.getMetadata();
         ssbApiCall.tableApiCall();
         int count = 0;
@@ -220,7 +220,7 @@ class SsbApiCallTest {
 
     @Test
     void randomTest() throws IOException {
-        ssbApiCall.metadataApiCall("11211");
+        ssbApiCall.metadataApiCall("08655");
         ssbApiCall.tableApiCall();
     }
 }
