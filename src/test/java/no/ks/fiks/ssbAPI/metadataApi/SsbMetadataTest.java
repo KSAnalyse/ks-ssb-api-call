@@ -14,21 +14,21 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SsbMetadataTest {
-    private static SsbApiCall ssbApiCall;
+
     private static SsbApiCall ssbApiCallFilter;
     private static SsbMetadata metadata;
 
 
     @BeforeAll
     static void setSsbMetadata() throws IOException {
-        ssbApiCall = new SsbApiCall("11816", 5, null, "131", "104", "214", "231", "127");
+
         ssbApiCallFilter = new SsbApiCall("11816", 5, null, "131", "104", "214", "231", "127");
         List<String> region = List.of("EAK", "3001");
         List<String> statistikkvariabel = List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000");
         Map<String, List<String>> localFilter = new LinkedHashMap<>();
         localFilter.put("KOKkommuneregion0000", region);
         localFilter.put("ContentsCode", statistikkvariabel);
-        ssbApiCallFilter.metadataApiCall(localFilter, true);
+        ssbApiCallFilter.metadataApiCall(localFilter);
         ssbApiCallFilter.tableApiCall();
         metadata = ssbApiCallFilter.getMetadata();
     }

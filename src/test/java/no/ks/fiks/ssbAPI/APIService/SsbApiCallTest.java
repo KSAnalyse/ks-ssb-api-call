@@ -20,6 +20,7 @@ class SsbApiCallTest {
     private SsbMetadata metadata;
     private SsbKlass klass;
     private final Map<String, List<String>> filter = new LinkedHashMap<>();
+    private final Map<String, List<String>> filterForNone = new LinkedHashMap<>();
 
     @BeforeEach
     void setObjects() {
@@ -30,10 +31,12 @@ class SsbApiCallTest {
         List<String> omfang = List.of("A");
         List<String> funksjon = List.of("100", "110", "120", "FGK8b", "FGK9");
         List<String> art = List.of("AGD4", "AGD10", "AGD2", "AGD56", "AGD28");
-        filter.put("KOKkommuneregion0000", region);
-        filter.put("KOKregnskapsomfa0000", omfang);
-        filter.put("KOKfunksjon0000", funksjon);
-        filter.put("KOKart0000", art);
+        filter.put("!KOKkommuneregion0000", region);
+        filter.put("!KOKregnskapsomfa0000", omfang);
+        filter.put("!KOKfunksjon0000", funksjon);
+        filter.put("!KOKart0000", art);
+        List<String> byggeareal = List.of("NONE");
+        filterForNone.put("Byggeareal", byggeareal);
     }
 
     @Test
@@ -50,7 +53,7 @@ class SsbApiCallTest {
 
     @Test
     void testMetadataApiCallTableNumberAndFilterRemove() throws IOException {
-        ssbApiCall.metadataApiCall("12367", filter, false);
+        ssbApiCall.metadataApiCall("12367", filter);
         metadata = ssbApiCall.getMetadata();
         assertAll("Checking if removed variables are gone and the first values are ones after the ones removed.",
                 () -> assertEquals("12367: Detaljerte regnskapstall driftsregnskapet, etter region, regnskapsomfang, funksjon, art, statistikkvariabel og år", metadata.getTitle()),
@@ -85,7 +88,16 @@ class SsbApiCallTest {
 
     @Test
     void testMetadataApiCallTableNumberAndFilterRemoveAllBut() throws IOException {
-        ssbApiCall.metadataApiCall("12367", filter, true);
+        filter.clear();
+        List<String> region = List.of("EAK", "EAKUO", "3001", "EKG16", "EKG17");
+        List<String> omfang = List.of("A");
+        List<String> funksjon = List.of("100", "110", "120", "FGK8b", "FGK9");
+        List<String> art = List.of("AGD4", "AGD10", "AGD2", "AGD56", "AGD28");
+        filter.put("KOKkommuneregion0000", region);
+        filter.put("KOKregnskapsomfa0000", omfang);
+        filter.put("KOKfunksjon0000", funksjon);
+        filter.put("KOKart0000", art);
+        ssbApiCall.metadataApiCall("12367", filter);
         metadata = ssbApiCall.getMetadata();
 
         assertAll("Check that list values only contain filter values.",
@@ -104,7 +116,7 @@ class SsbApiCallTest {
         Map<String, List<String>> localFilter = new LinkedHashMap<>();
         localFilter.put("KOKkommuneregion0000", region);
         localFilter.put("ContentsCode", statistikkvariabel);
-        ssbApiCall.metadataApiCall(localFilter, true);
+        ssbApiCall.metadataApiCall(localFilter);
         metadata = ssbApiCall.getMetadata();
 
         assertAll("Check that table is unchanged and values only contain filter values.",
@@ -128,7 +140,7 @@ class SsbApiCallTest {
         jsonOne = jsonOne.replaceAll("\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)", "");
         jsonTwo = jsonTwo.replaceAll("\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)", "");
 
-        ssbApiCall.metadataApiCall("11816", localFilter, true);
+        ssbApiCall.metadataApiCall("11816", localFilter);
 
 
         List<String> queryList = ssbApiCall.tableApiCall();
@@ -153,7 +165,7 @@ class SsbApiCallTest {
         localFilter.put("Tid", aar);
 
         String jsonOne = Files.readString(Path.of("src/main/resources/testMetadataResult.json"));
-        ssbApiCall.metadataApiCall(localFilter, true);
+        ssbApiCall.metadataApiCall(localFilter);
         jsonOne = jsonOne.replaceAll("\\s+(?=([^\"]*\"[^\"]*\")*[^\"]*$)", "");
         List<String> queryList = ssbApiCall.tableApiCall();
 
@@ -218,9 +230,20 @@ class SsbApiCallTest {
         assertNotNull(klass);
     }
 
-    @Test
+    /*@Test
     void randomTest() throws IOException {
         ssbApiCall.metadataApiCall("08655");
         ssbApiCall.tableApiCall();
-    }
+    }*/
+
+    /*@Test
+    void NoneTest() throws IOException {
+        filter.clear();
+        List<String> region = List.of("0106", "0219", "0301", "0602","1001","1102","1103","1201","1601","1902","1108","3004","3005","3024","4204","4601","5001","5401");
+        List<String> omfang = List.of("A");
+        filter.put("KOKkommuneregion0000", region);
+        filter.put("KOKregnskapsomfa0000", omfang);
+        ssbApiCall.metadataApiCall("12367", filter);
+        metadata = ssbApiCall.getMetadata();
+    }*/
 }
