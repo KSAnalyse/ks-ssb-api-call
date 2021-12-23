@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -38,14 +39,11 @@ public class SsbMetadata {
      *
      * @param metadataResult This is the metadata query result.
      * @param metadataFilter This is the Map of the metadata which will be filtered.
-     * @param removeAllBut   This boolean is used to determine if it should filter out or only use the variables in the
-     *                       metadata filter.
      * @throws JsonProcessingException
      */
-    public SsbMetadata(String metadataResult, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws JsonProcessingException {
+    public SsbMetadata(String metadataResult, Map<String, List<String>> metadataFilter) throws JsonProcessingException {
         this.metadataResult = metadataResult;
         this.metadataFilter = metadataFilter;
-        this.removeAllBut = removeAllBut;
         variables = new ArrayList<>();
         convertStringToJson();
         filterMetadata();
@@ -100,10 +98,19 @@ public class SsbMetadata {
      * This method calls on the filter method in SsbMetadataVariables to filter out or only use the filters in the list.
      */
     private void filterMetadata() {
-        for (SsbMetadataVariables metadataVariables : variables) {
-            if (metadataFilter.containsKey(metadataVariables.getCode())) {
-                metadataVariables.filterValuesAndValueTexts(metadataFilter.get(metadataVariables.getCode()), removeAllBut);
+        for (String key : metadataFilter.keySet()) {
+            String strippedKey;
+            if (key.contains("!"))
+                strippedKey = key.replace("!", "");
+            else {
+                strippedKey = key;
             }
+            String finalStrippedKey = strippedKey;
+            Optional<SsbMetadataVariables> metadataVariables =  variables.stream()
+                    .filter(var -> var.getCode().equals(finalStrippedKey))
+                    .findFirst();
+
+            metadataVariables.ifPresent(ssbMetadataVariables -> ssbMetadataVariables.filterValuesAndValueTexts(key, metadataFilter.get(key)));
         }
     }
 }
