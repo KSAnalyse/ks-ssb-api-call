@@ -89,7 +89,7 @@ public class SsbApiCall {
                 klassApiCall();
             }
             if (filter.isPresent())
-                metadataApiCall(metadataFilter, false);
+                metadataApiCall(metadataFilter);
             else
                 metadataApiCall();
         } catch (IOException ioe) {
@@ -135,14 +135,13 @@ public class SsbApiCall {
      *
      * @param tableNumber    This is the table number you want to query.
      * @param metadataFilter This is a Map of filters for the metadata.
-     * @param removeAllBut   This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
      * @see #apiCall(String, URL, String, int)
      */
 
-    public void metadataApiCall(String tableNumber, Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
+    public void metadataApiCall(String tableNumber, Map<String, List<String>> metadataFilter) throws IOException {
         metadataUrl = new URL("https://data.ssb.no/api/v0/no/table/" + tableNumber);
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0), metadataFilter, removeAllBut);
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0), metadataFilter);
         this.metadataBuilder = new MetadataBuilder(metadata, klass);
         buildMetadata();
     }
@@ -153,12 +152,11 @@ public class SsbApiCall {
      * This method creates a SsbMetadata object with metadata filter.
      *
      * @param metadataFilter This is a Map of filters for the metadata.
-     * @param removeAllBut   This a boolean to determine if you want to remove the elements in the filters or only keep those elements.
      * @throws IOException Throws IOException if apiCall encounters an error when querying.
      * @see #apiCall(String, URL, String, int)
      */
-    public void metadataApiCall(Map<String, List<String>> metadataFilter, boolean removeAllBut) throws IOException {
-        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0), metadataFilter, removeAllBut);
+    public void metadataApiCall(Map<String, List<String>> metadataFilter) throws IOException {
+        metadata = new SsbMetadata(apiCall("metadata", metadataUrl, "", 0), metadataFilter);
         this.metadataBuilder = new MetadataBuilder(metadata, klass);
         buildMetadata();
     }
@@ -345,6 +343,8 @@ public class SsbApiCall {
 
     private String buildString(SsbMetadataVariables ssbMetadataVariables) {
         StringBuilder values = new StringBuilder();
+        if (ssbMetadataVariables.getValues().isEmpty())
+            return "";
         for (String s : ssbMetadataVariables.getValues()) {
             values.append("\"").append(s).append("\", ");
         }
