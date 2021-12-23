@@ -112,23 +112,29 @@ public class SsbMetadataVariables {
      * The method checks if you want to remove all but the filter or remove the filter elements.
      *
      * @param filterList   This is the list of values that will be filtered on.
-     * @param removeAllBut This boolean is to check if we want to remove all but the filter elements, or filter out those
-     *                     elements.
      */
-    public void filterValuesAndValueTexts(List<String> filterList, boolean removeAllBut) {
+    public void filterValuesAndValueTexts(String code, List<String> filterList) {
         List<Integer> valueTextPositions;
         List<String> valueTextFilter;
-        valueTextPositions = filterList.stream().map(s -> values.indexOf(s)).collect(Collectors.toList());
-        valueTextFilter = valueTextPositions.stream().mapToInt(pos -> pos).mapToObj(i -> valueTexts.get(i)).collect(Collectors.toList());
 
-        if (!removeAllBut) {
-            values.removeAll(filterList);
-            valueTexts.removeAll(valueTextFilter);
+        if (filterList.get(0).equalsIgnoreCase("NONE")) {
+            values.clear();
+            valueTexts.clear();
         } else {
-            values = filterList;
-            valueTexts = valueTextFilter;
+
+            valueTextPositions = filterList.stream().map(s -> values.indexOf(s)).collect(Collectors.toList());
+            valueTextFilter = valueTextPositions.stream().mapToInt(pos -> pos).mapToObj(i -> valueTexts.get(i)).collect(Collectors.toList());
+
+
+            if (code.contains("!")) {
+                values.removeAll(filterList);
+                valueTexts.removeAll(valueTextFilter);
+            } else {
+                values = filterList;
+                valueTexts = valueTextFilter;
+            }
+            largestValue = findLargestValueString(values);
+            largestValueText = findLargestValueString(valueTexts);
         }
-        largestValue = findLargestValueString(values);
-        largestValueText = findLargestValueString(valueTexts);
     }
 }
