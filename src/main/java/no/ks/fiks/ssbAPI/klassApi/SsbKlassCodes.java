@@ -103,6 +103,9 @@ public class SsbKlassCodes {
      */
 
     public int getToYear() {
-        return validToInRequestedRange.getYear();
+        if (validToInRequestedRange == null)
+            return 0;
+        else
+            return validToInRequestedRange.getYear();
     }
 }

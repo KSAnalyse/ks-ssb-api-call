@@ -110,7 +110,8 @@ public class MetadataBuilder {
                     continue;
 
                 if (tid >= klass.getKlassCodesResultJson().get(region).getFromYear()
-                        && tid < klass.getKlassCodesResultJson().get(region).getToYear()) {
+                        && (klass.getKlassCodesResultJson().get(region).getToYear() == 0
+                        && tid < klass.getKlassCodesResultJson().get(region).getToYear())) {
                     if (region.equals("EAK") && changedRegion) {
                         region = "0";
                     }
