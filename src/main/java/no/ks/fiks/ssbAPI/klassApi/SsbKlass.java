@@ -35,23 +35,38 @@ public class SsbKlass {
      *
      * @param klassCodes This is a list of classification codes query results.
      * @throws JsonProcessingException
+     * TODO: Fix so it doesn't fail tests
      */
     public void convertStringToJson(List<String> klassCodes) throws JsonProcessingException {
+        LocalDate validToInRequestedRange;
+
         for (String codes : klassCodes) {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode actualObj = mapper.readTree(codes);
             for (JsonNode klassCode : actualObj.get("codes")) {
                 String regionKode = klassCode.get("code").asText();
                 String regionNavn = klassCode.get("name").asText();
+
                 LocalDate validFromInRequestedRange = LocalDate.parse(klassCode.get("validFromInRequestedRange").asText());
-                LocalDate validToInRequestedRange = LocalDate.parse(klassCode.get("validToInRequestedRange").asText());
+                if (!klassCode.get("validToInRequestedRange").isNull())  {
+                    validToInRequestedRange = LocalDate.parse(klassCode.get("validToInRequestedRange").asText());
+                } else {
+                    validToInRequestedRange = null;
+                }
+
                 if (klassCodesResultJson.containsKey(regionKode)) {
                     if (validFromInRequestedRange.isBefore(klassCodesResultJson.get(regionKode).getValidFromInRequestedRange())) {
                         klassCodesResultJson.get(regionKode).setValidFromInRequestedRange(validFromInRequestedRange);
                     }
-                    if (validToInRequestedRange.isAfter(klassCodesResultJson.get(regionKode).getValidToInRequestedRange())) {
+
+                    if (validToInRequestedRange == null) {
+                        klassCodesResultJson.get(regionKode).setValidToInRequestedRange(null);
+                    } else if (klassCodesResultJson.get(regionKode).getValidToInRequestedRange() == null) {
+                        klassCodesResultJson.get(regionKode).setValidToInRequestedRange(validToInRequestedRange);
+                    } else if (validToInRequestedRange.isAfter(klassCodesResultJson.get(regionKode).getValidToInRequestedRange())) {
                         klassCodesResultJson.get(regionKode).setValidToInRequestedRange(validToInRequestedRange);
                     }
+
                 } else {
                     klassCodesResultJson.put(regionKode, new SsbKlassCodes(regionKode, regionNavn, validFromInRequestedRange, validToInRequestedRange));
                 }
