@@ -71,12 +71,12 @@ public class SsbApiCall {
                 if (numberOfYears > 0)
                     urlKlassYear = Calendar.getInstance().get(Calendar.YEAR) - numberOfYears;
                 else
-                    urlKlassYear = 1000;
+                    urlKlassYear = 2000;
                 klassListUrl = new ArrayList<>();
                 for (String klassNumber : classifications) {
                     String urlKlassStart = "https://data.ssb.no/api/klass/v1/classifications/";
                     String urlKlassMiddle = "/codes.json?from=";
-                    String urlKlassEnd = "-01-01&to=2059-01-01&includeFuture=true";
+                    String urlKlassEnd = "-01-01&includeFuture=true";
                     URL klass = new URL(urlKlassStart + klassNumber + urlKlassMiddle + urlKlassYear + urlKlassEnd);
                     klassListUrl.add(klass);
                 }
@@ -88,10 +88,12 @@ public class SsbApiCall {
             if (classifications.length != 0) {
                 klassApiCall();
             }
-            if (filter.isPresent())
+            if (filter.isPresent()) {
                 metadataApiCall(metadataFilter);
-            else
+            }
+            else {
                 metadataApiCall();
+            }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
