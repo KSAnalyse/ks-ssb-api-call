@@ -56,7 +56,7 @@ class SsbApiCallTest {
         ssbApiCall.metadataApiCall("12367", filter);
         metadata = ssbApiCall.getMetadata();
         assertAll("Checking if removed variables are gone and the first values are ones after the ones removed.",
-                () -> assertEquals("12367: Detaljerte regnskapstall driftsregnskapet, etter region, regnskapsomfang, funksjon, art, statistikkvariabel og år", metadata.getTitle()),
+                () -> assertEquals("12367: Detaljerte regnskapstall driftsregnskapet, kommunekonsern og -kasse, etter region, regnskapsomfang, funksjon, art, statistikkvariabel og år", metadata.getTitle()),
                 () -> assertEquals("3002", metadata.getVariables().get(0).getValues().get(0)),
                 () -> assertEquals("3003", metadata.getVariables().get(0).getValues().get(1)),
                 () -> assertEquals("3004", metadata.getVariables().get(0).getValues().get(2)),
@@ -101,7 +101,7 @@ class SsbApiCallTest {
         metadata = ssbApiCall.getMetadata();
 
         assertAll("Check that list values only contain filter values.",
-                () -> assertEquals("12367: Detaljerte regnskapstall driftsregnskapet, etter region, regnskapsomfang, funksjon, art, statistikkvariabel og år", metadata.getTitle()),
+                () -> assertEquals("12367: Detaljerte regnskapstall driftsregnskapet, kommunekonsern og -kasse, etter region, regnskapsomfang, funksjon, art, statistikkvariabel og år", metadata.getTitle()),
                 () -> assertEquals(filter.get("KOKkommuneregion0000"), metadata.getVariables().get(0).getValues()),
                 () -> assertEquals(filter.get("KOKregnskapsomfa0000"), metadata.getVariables().get(1).getValues()),
                 () -> assertEquals(filter.get("KOKfunksjon0000"), metadata.getVariables().get(2).getValues()),
@@ -129,7 +129,7 @@ class SsbApiCallTest {
     void tableApiCallFilter() throws IOException {
         List<String> region = List.of("EAK", "3001", "0101");
         List<String> statistikkvariabel = List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000");
-        List<String> aar = List.of("2016", "2020");
+        List<String> aar = List.of("2017", "2021");
         Map<String, List<String>> localFilter = new LinkedHashMap<>();
         localFilter.put("KOKkommuneregion0000", region);
         localFilter.put("ContentsCode", statistikkvariabel);
@@ -158,7 +158,7 @@ class SsbApiCallTest {
         ssbApiCall = new SsbApiCall("11816", -1, null);
         List<String> region = List.of("EAK", "3001", "0101");
         List<String> statistikkvariabel = List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000");
-        List<String> aar = List.of("2016", "2020");
+        List<String> aar = List.of("2017", "2021");
         Map<String, List<String>> localFilter = new LinkedHashMap<>();
         localFilter.put("KOKkommuneregion0000", region);
         localFilter.put("ContentsCode", statistikkvariabel);
@@ -181,7 +181,7 @@ class SsbApiCallTest {
         ssbApiCall = new SsbApiCall("11816", 2, null);
         ssbApiCall.tableApiCall();
         metadata = ssbApiCall.getMetadata();
-        assertEquals(List.of("2019", "2020"), metadata.getVariables().get(2).getValues());
+        assertEquals(List.of("2020", "2021"), metadata.getVariables().get(2).getValues());
     }
 
     @Test
@@ -189,7 +189,7 @@ class SsbApiCallTest {
         ssbApiCall = new SsbApiCall("11816", 10, null);
         ssbApiCall.tableApiCall();
         metadata = ssbApiCall.getMetadata();
-        assertEquals(List.of("2015", "2016", "2017", "2018", "2019", "2020"), metadata.getVariables().get(2).getValues());
+        assertEquals(List.of("2015","2016", "2017", "2018", "2019", "2020", "2021"), metadata.getVariables().get(2).getValues());
     }
 
     @Test

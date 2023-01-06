@@ -21,7 +21,6 @@ class SsbMetadataTest {
 
     @BeforeAll
     static void setSsbMetadata() throws IOException {
-
         ssbApiCallFilter = new SsbApiCall("11816", 5, null, "131", "104", "214", "231", "127");
         List<String> region = List.of("EAK", "3001");
         List<String> statistikkvariabel = List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000");
@@ -63,7 +62,7 @@ class SsbMetadataTest {
         assertAll("Checking value lists of the variables",
                 () -> assertEquals(List.of("EAK", "3001"), metadata.getVariables().get(0).getValues()),
                 () -> assertEquals(List.of("KOSandelgsavalle0000", "KOSbtodrutggatel0000"), metadata.getVariables().get(1).getValues()),
-                () -> assertEquals(List.of("2016", "2017", "2018", "2019", "2020"), metadata.getVariables().get(2).getValues())
+                () -> assertEquals(List.of("2017", "2018", "2019", "2020", "2021"), metadata.getVariables().get(2).getValues())
         );
     }
 }
